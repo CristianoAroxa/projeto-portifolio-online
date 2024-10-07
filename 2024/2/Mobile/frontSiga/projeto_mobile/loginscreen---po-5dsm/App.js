@@ -1,14 +1,36 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import BottomNavigationBar from './components/BottomNavigationBar'
+import BottomNavigationBar from './components/BottomNavigationBar';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  
+  const [error, setError] = useState(null);
 
-  const handleLogin = () => {
-       console.log('Login efetuado com sucesso!');
+  const handleLogin = async () => {
+    try {
+      // Call API to authenticate user
+      const response = await fetch('https://your-api-url.com/authenticate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Login successful, redirect to profile page
+        navigation.navigate('Perfil');
+      } else {
+        // Login failed, display error message
+        setError(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      setError('Ocorreu um erro. Por favor, tente novamente.');
+    }
   };
 
   return (
@@ -39,11 +61,17 @@ const LoginScreen = () => {
         onChangeText={(text) => setSenha(text)}
       />
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        {error && <Text style={styles.error}>{error}</Text>}
         <Text style={[styles.buttonText, { fontFamily: 'LeagueSpartan' }]}>Entrar</Text>
       </TouchableOpacity>
-      <Text style={[styles.forgotPassword, { fontFamily: 'LeagueSpartan' }]}>Esqueceu a senha?</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('ResetPasswordScreen')}>
+        <Text style={[styles.forgotPassword, { fontFamily: 'LeagueSpartan' }]}>Esqueceu a senha?</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('Cadastro')}>
+        <Text style={[styles.cadastro, { fontFamily: 'LeagueSpartan' }]}>Não possui cadastro? Cadastre-se!</Text>
+      </TouchableOpacity>
     </View>
-    <BottomNavigationBar/>
+      <BottomNavigationBar/>
     </View>
   );
 };
@@ -110,10 +138,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'LeagueSpartan',
   },
+  error: {
+    color: 'red',
+    fontSize: 16,
+    marginBottom: 20
+  },
   forgotPassword: {
     fontSize: 16,
     color: '#1A3E78',
     marginTop: 20,
+    fontFamily: 'LeagueSpartan',
+  },
+  cadastro: {
+    fontSize: 16,
+    color: '#1A3E78',    
     fontFamily: 'LeagueSpartan',
   },
 });
